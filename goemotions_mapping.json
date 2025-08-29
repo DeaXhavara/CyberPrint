@@ -1,0 +1,37 @@
+{
+  "anger": "toxic",
+  "annoyance": "toxic",
+  "disgust": "toxic",
+  "disapproval": "toxic",
+  "fear": "toxic",
+  "grief": "toxic",
+  "remorse": "toxic",
+  "sadness": "toxic",
+  
+  "approval": "constructive",
+  "caring": "constructive",
+  "curiosity": "constructive",
+  "gratitude": "constructive",
+  "love": "constructive",
+  "pride": "constructive",
+  
+  "admiration": "positive",
+  "amusement": "positive",
+  "desire": "positive",
+  "excitement": "positive",
+  "joy": "positive",
+  "optimism": "positive",
+  "relief": "positive",
+  "disappointment": "positive", 
+  
+  "confusion": "neutral",
+  "embarrassment": "neutral",
+  "nervousness": "neutral",
+  "realization": "neutral",
+  "surprise": "neutral",
+  "neutral": "neutral",
+  
+  "boredom": "neutral",
+  "frustration": "toxic",
+  "envy": "toxic"
+}

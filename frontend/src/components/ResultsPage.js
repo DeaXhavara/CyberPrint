@@ -16,6 +16,24 @@ const ResultsPage = () => {
 
   const { profile, analytics, insights, pdf_path } = data;
 
+  // Add null checks to prevent crashes
+  if (!analytics || !analytics.sub_label_distribution) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-4">Analysis Error</h2>
+          <p className="text-gray-600 mb-4">Unable to load analysis results. Please try again.</p>
+          <button 
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Prepare donut chart data for sub-labels
   const subLabelData = Object.entries(analytics.sub_label_distribution).map(([label, count]) => ({
     name: label.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),

@@ -82,8 +82,7 @@ class CyberPrintMLPredictor:
             raise
     
     def _initialize_enhancers(self, enable_active_learning: bool = True):
-        """Initialize enhanced features like sub-label classification and active learning."""
-        
+        """Initialize sub-label classifier and active learning components."""
         try:
             # Initialize sub-label classifier
             from cyberprint.models.sublabel_classifier import EnhancedSubLabelClassifier
@@ -102,48 +101,6 @@ class CyberPrintMLPredictor:
         except ImportError as e:
             logger.warning(f"Enhanced features not available: {e}")
             logger.warning("Falling back to basic prediction only")
-            # Create a simple fallback sub-label classifier
-            self._create_fallback_sublabel_classifier()
-    
-    def _create_fallback_sublabel_classifier(self):
-        """Create a simple rule-based sub-label classifier for Railway deployment."""
-        class FallbackSubLabelClassifier:
-            def classify_sub_label(self, text, predicted_label, log_rules=False):
-                text_lower = text.lower()
-                
-                # Gratitude detection
-                gratitude_words = ['thank', 'thanks', 'appreciate', 'grateful', 'thx']
-                if any(word in text_lower for word in gratitude_words):
-                    if 'nothing' not in text_lower and 'no' not in text_lower:
-                        return "gratitude", 0.8, ["gratitude_detected"]
-                
-                # Sarcasm detection
-                sarcasm_indicators = ['/s', 'yeah right', 'sure thing', 'oh wow']
-                if any(indicator in text_lower for indicator in sarcasm_indicators):
-                    return "sarcasm", 0.7, ["sarcasm_detected"]
-                
-                # Excitement detection
-                excitement_words = ['amazing', 'awesome', 'fantastic', 'incredible', '!!!']
-                if any(word in text_lower for word in excitement_words):
-                    return "excitement", 0.6, ["excitement_detected"]
-                
-                # Frustration detection
-                frustration_words = ['annoying', 'frustrated', 'stupid', 'hate']
-                if any(word in text_lower for word in frustration_words):
-                    return "frustration", 0.6, ["frustration_detected"]
-                
-                # Default based on sentiment
-                if predicted_label == "positive":
-                    return "general_positive", 0.5, []
-                elif predicted_label == "negative":
-                    return "general_negative", 0.5, []
-                elif predicted_label == "yellow_flag":
-                    return "yellow_flag", 0.8, []
-                else:
-                    return "general", 0.5, []
-        
-        self.sub_label_classifier = FallbackSubLabelClassifier()
-        logger.info("Created fallback sub-label classifier with basic rules")
     
     def preprocess_text(self, text: str) -> str:
         """

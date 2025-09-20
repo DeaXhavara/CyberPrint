@@ -320,7 +320,7 @@ async def analyze_profile(request: AnalysisRequest) -> Dict[str, Any]:
                 "yellow_flags": analytics.get('yellow_flags', 0)
             },
             "insights": insights,
-            "pdf_path": f"/download/{os.path.basename(analytics['pdf_report_path'])}" if 'pdf_report_path' in analytics and analytics['pdf_report_path'] else None
+            "pdf_path": f"https://cyberprint-production.up.railway.app/static/{os.path.basename(analytics['pdf_report_path'])}" if 'pdf_report_path' in analytics and analytics['pdf_report_path'] else None
         }
         
         logger.info(f"Analysis complete for {identifier}")

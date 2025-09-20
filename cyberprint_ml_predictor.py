@@ -21,12 +21,12 @@ class CyberPrintMLPredictor:
     """ML predictor using trained DeBERTa model with fallback to Logistic Regression."""
     
     def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True):
-        # Try DeBERTa model first - check multiple possible locations
+        # Try DeBERTa model first - use the 4-epoch active learning model with correct labels
         possible_dirs = [
-            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_enhanced"),
-            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_full"),
+            os.path.join(os.path.dirname(__file__), "models", "deberta_active_learning_4epochs"),
             os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_full_e4"),
-            os.path.join(os.path.dirname(__file__), "models", "deberta_active_learning_4epochs")
+            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_full"),
+            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_enhanced")
         ]
         
         deberta_model_dir = None

@@ -21,9 +21,31 @@ class CyberPrintMLPredictor:
     """ML predictor using trained DeBERTa model with fallback to Logistic Regression."""
     
     def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True):
-        # Use enhanced logistic regression with boosted confidence for hackathon
-        logger.info("Using enhanced logistic regression with high confidence scoring")
-        self._init_logistic_regression(model_dir)
+        # Try DeBERTa model first - check multiple possible locations
+        possible_dirs = [
+            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_enhanced"),
+            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_full"),
+            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_full_e4"),
+            os.path.join(os.path.dirname(__file__), "models", "deberta_active_learning_4epochs")
+        ]
+        
+        deberta_model_dir = None
+        for dir_path in possible_dirs:
+            if os.path.exists(dir_path):
+                deberta_model_dir = dir_path
+                break
+        
+        if deberta_model_dir and os.path.exists(deberta_model_dir):
+            try:
+                from cyberprint.models.ml.deberta_predictor import DeBERTaPredictor
+                self.predictor = DeBERTaPredictor(deberta_model_dir)
+                self.predictor_type = "deberta"
+                logger.info("Using DeBERTa model for predictions")
+            except Exception as e:
+                logger.warning(f"Failed to load DeBERTa model: {e}")
+                self._init_logistic_regression(model_dir)
+        else:
+            self._init_logistic_regression(model_dir)
         
         # Initialize additional components
         self.labels = ['positive', 'negative', 'neutral', 'yellow_flag']

@@ -1,4 +1,0 @@
-id,comment_text,toxicity_score,toxicity_tier,toxic_score,severe_toxic_score,obscene_score,threat_score,insult_score,identity_hate_score
-1,I hate this product!,0.094,Low,0.607,0.012,0.032,0.004,0.055,0.032
-2,"Great work, very helpful.",0.005,Low,0.013,0.004,0.008,0.002,0.009,0.003
-3,"You are terrible, go away!",0.124,Low,0.651,0.021,0.093,0.012,0.184,0.034

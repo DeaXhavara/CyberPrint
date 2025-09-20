@@ -1,0 +1,26 @@
+# Core scientific stack
+pandas==2.2.2
+numpy==1.26.4
+joblib==1.4.2
+scikit-learn==1.5.1
+
+# Environment & HTTP
+python-dotenv==1.0.1
+requests==2.32.3
+
+# Platform APIs
+praw==7.7.1
+google-api-python-client==2.129.0
+google-auth==2.33.0
+google-auth-httplib2==0.2.0
+
+# NLP / datasets
+datasets==2.21.0
+transformers==4.44.2
+
+# Reporting
+reportlab==4.2.2
+
+# Additional dependencies for full pipeline
+torch>=1.9.0
+accelerate>=0.20.0

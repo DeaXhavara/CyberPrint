@@ -1,28 +1,28 @@
 import os
 import pathlib
-from dotenv import load_dotenv
+import logging
+from typing import List, Optional, Union, Dict, Any
+import json
 
-# Force load .env immediately
-_env_path = pathlib.Path(__file__).parents[3] / '.env'
-if _env_path.exists():
-    load_dotenv(dotenv_path=str(_env_path))
-    print("Loaded .env from", _env_path)
-else:
-    print(".env not found at", _env_path)
-
-# Now import the rest of your stuff
 import joblib
 import numpy as np
-import logging
 from cyberprint.label_mapping import LABELS_FLAT as CATEGORY_LABELS, CATEGORY_EMOTIONS
+from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 if os.environ.get('CYBERPRINT_DEBUG') == '1':
     logging.basicConfig(level=logging.DEBUG)
 
-# Load .env automatically
+# Force load .env immediately
+_env_path = pathlib.Path(__file__).parents[3] / '.env'
+if _env_path.exists():
+    load_dotenv(dotenv_path=str(_env_path))
+    logger.info("Loaded .env from %s", _env_path)
+else:
+    logger.info(".env not found at %s", _env_path)
+
+# Load .env automatically (fallback)
 try:
-    from dotenv import load_dotenv
     _env_path = pathlib.Path(__file__).parents[2] / '.env'
     if _env_path.exists():
         load_dotenv(dotenv_path=str(_env_path))
@@ -47,39 +47,47 @@ except Exception:
 _model = None
 _vectorizer = None
 _pos_index_list = None  # positive-class indices
+_thresholds = None  # thresholds loaded from labels.json
 
-# Candidate artifact locations
+# Candidate artifact locations (built dynamically so repo-relative files are found)
+MODULE_DIR = os.path.abspath(os.path.dirname(__file__))
+REPO_ROOT = os.path.abspath(os.path.join(MODULE_DIR, '..', '..'))
+
 CANDIDATE_MODEL_PATHS = [
-    "C:/Users/User/cyberprintproject/models/ml/polished_model.joblib",
-    "C:/Users/User/cyberprintproject/models/ml/polished_model.pkl",
-    "C:/Users/User/cyberprintproject/models/ml/multi_label_model.joblib",
-    "C:/Users/User/cyberprintproject/models/ml/final_model.pkl",
-    "models/ml/polished_model.joblib",
-    "models/ml/multi_label_model.joblib",
-    "../models/ml/polished_model.joblib",
+    os.path.join(MODULE_DIR, 'polished_model.joblib'),
+    os.path.join(MODULE_DIR, 'polished_model.pkl'),
+    os.path.join(MODULE_DIR, 'multi_label_model.joblib'),
+    os.path.join(MODULE_DIR, 'final_model.pkl'),
+    os.path.join(REPO_ROOT, 'models', 'ml', 'polished_model.joblib'),
+    os.path.join(REPO_ROOT, 'models', 'ml', 'multi_label_model.joblib'),
+    os.path.join(REPO_ROOT, 'cyberprint', 'models', 'ml', 'polished_model.joblib'),
+    os.path.join(REPO_ROOT, 'cyberprint', 'models', 'ml', 'polished_model.pkl'),
+    'models/ml/polished_model.joblib',
+    '../models/ml/polished_model.joblib',
 ]
 
 CANDIDATE_VECTORIZER_PATHS = [
-    "C:/Users/User/cyberprintproject/models/ml/polished_vectorizer.joblib",
-    "C:/Users/User/cyberprintproject/models/ml/vectorizer.pkl",
-    "C:/Users/User/cyberprintproject/models/ml/tfidf_vectorizer.joblib",
-    "models/ml/polished_vectorizer.joblib",
-    "models/ml/vectorizer.pkl",
-    "../models/ml/polished_vectorizer.joblib",
+    os.path.join(MODULE_DIR, 'polished_vectorizer.joblib'),
+    os.path.join(MODULE_DIR, 'vectorizer.pkl'),
+    os.path.join(MODULE_DIR, 'tfidf_vectorizer.joblib'),
+    os.path.join(REPO_ROOT, 'models', 'ml', 'polished_vectorizer.joblib'),
+    os.path.join(REPO_ROOT, 'cyberprint', 'models', 'ml', 'polished_vectorizer.joblib'),
+    'models/ml/polished_vectorizer.joblib',
+    '../models/ml/polished_vectorizer.joblib',
 ]
 
 
-def _find_existing_path(candidate_paths):
-    """Return first valid path from candidates."""
+def _find_existing_path(candidate_paths: List[str]) -> Optional[str]:
+    """Return the first existing path from the list of candidate paths, or None if none exist."""
     for path in candidate_paths:
         if os.path.exists(path):
             return path
     return None
 
 
-def _load_model_and_vectorizer():
-    """Load model + vectorizer, preferring env vars, with sanity checks."""
-    global _model, _vectorizer, _pos_index_list
+def _load_model_and_vectorizer() -> tuple:
+    """Load the model and vectorizer, preferring environment variables, with sanity checks."""
+    global _model, _vectorizer, _pos_index_list, _thresholds
     if _model is not None and _vectorizer is not None:
         return _model, _vectorizer
 
@@ -126,12 +134,34 @@ def _load_model_and_vectorizer():
     except Exception as ex:
         logger.debug('Could not infer positive-class indices: %s', ex)
 
+    # Load thresholds from labels.json in same directory as model_path
+    _thresholds = None
+    try:
+        model_dir = os.path.dirname(model_path)
+        labels_json_path = os.path.join(model_dir, 'labels.json')
+        if os.path.exists(labels_json_path):
+            with open(labels_json_path, 'r', encoding='utf-8') as f:
+                labels_data = json.load(f)
+            if isinstance(labels_data, dict) and 'thresholds' in labels_data:
+                if isinstance(labels_data['thresholds'], dict):
+                    _thresholds = labels_data['thresholds']
+                    logger.debug("Loaded thresholds (dict) from %s", labels_json_path)
+                elif isinstance(labels_data['thresholds'], list):
+                    try:
+                        from cyberprint.label_mapping import LABELS_FLAT
+                        _thresholds = {label: float(val) for label, val in zip(LABELS_FLAT, labels_data['thresholds'])}
+                        logger.debug("Loaded thresholds (list mapped to labels) from %s", labels_json_path)
+                    except Exception as ex:
+                        logger.debug("Failed to map list thresholds to labels: %s", ex)
+    except Exception as ex:
+        logger.debug("Failed to load thresholds from labels.json: %s", ex)
+
     logger.debug('Loaded model=%s, vectorizer=%s', model_path, vec_path)
     return _model, _vectorizer
 
 
-def _extract_positive_probs(probs, n_samples, n_labels):
-    """Normalize predict_proba outputs into (n_samples, n_labels)."""
+def _extract_positive_probs(probs: Any, n_samples: int, n_labels: int) -> np.ndarray:
+    """Normalize predict_proba outputs into (n_samples, n_labels) array with probabilities in [0,1]."""
     global _pos_index_list
     pos = np.zeros((n_samples, n_labels), dtype=float)
 
@@ -150,26 +180,44 @@ def _extract_positive_probs(probs, n_samples, n_labels):
                     pos[:, j] = p.reshape(n_samples, -1)[:, 0]
                 except Exception:
                     pos[:, j] = 0.0
-        return pos
+        return np.clip(pos, 0.0, 1.0)
 
     p = np.asarray(probs)
     if p.ndim == 2:
         if p.shape == (n_samples, n_labels):
-            return p.astype(float)
+            return np.clip(p.astype(float), 0.0, 1.0)
         if p.shape == (n_labels, n_samples):
-            return p.T.astype(float)
+            return np.clip(p.T.astype(float), 0.0, 1.0)
         if p.shape == (n_samples, 2 * n_labels):
             try:
-                return p.reshape(n_samples, n_labels, 2)[:, :, 1].astype(float)
+                return np.clip(p.reshape(n_samples, n_labels, 2)[:, :, 1].astype(float), 0.0, 1.0)
             except Exception:
                 pass
         if p.shape[0] == n_samples and p.shape[1] >= n_labels:
-            return p[:, :n_labels].astype(float)
+            return np.clip(p[:, :n_labels].astype(float), 0.0, 1.0)
     return pos
 
 
-def predict_toxicity(texts):
-    """Predict toxicity for a list of texts -> list of dicts with categories + emotions."""
+def _safe_transform(vectorizer: Any, texts: List[str]) -> Optional[Any]:
+    """Safely transform texts using the vectorizer, returning None on failure."""
+    try:
+        return vectorizer.transform(texts)
+    except Exception as e:
+        logger.error('Vectorizer.transform failed: %s', e)
+        return None
+
+
+def predict_toxicity(texts: Union[str, List[Optional[str]]]) -> List[Dict[str, Any]]:
+    """
+    Predict toxicity for a list of texts.
+
+    Args:
+        texts: A single text string or a list of text strings to classify.
+
+    Returns:
+        A list of dictionaries containing category probabilities, emotion scores,
+        dominant category, dominant category score, top emotion, and top emotion score.
+    """
     if texts is None:
         return []
     if isinstance(texts, str):
@@ -185,10 +233,8 @@ def predict_toxicity(texts):
         logger.error('Artifact load error: %s', e)
         return [_zero_result() for _ in range(n)]
 
-    try:
-        X = vectorizer.transform(texts)
-    except Exception as e:
-        logger.error('Vectorizer.transform failed: %s', e)
+    X = _safe_transform(vectorizer, texts)
+    if X is None:
         return [_zero_result() for _ in range(n)]
 
     try:
@@ -210,15 +256,39 @@ def predict_toxicity(texts):
 
     results = []
     for i in range(n):
-        category_probs = {label: round(float(pos[i, j]) * 100.0, 1) for j, label in enumerate(CATEGORY_LABELS)}
+        category_probs = {}
+        category_flags = {}
+        for j, label in enumerate(CATEGORY_LABELS):
+            prob = float(pos[i, j])
+            threshold = 0.5
+            if _thresholds and label in _thresholds:
+                try:
+                    threshold = float(_thresholds[label])
+                except Exception:
+                    threshold = 0.5
+            is_active = prob >= threshold
+            logger.debug("Text %d label=%s prob=%.3f threshold=%.2f active=%s", i, label, prob, threshold, is_active)
+            category_probs[label] = round(prob * 100.0, 1)
+            category_flags[label] = is_active
+
         result = {**category_probs}
+        thresholds_dict = {label: float(_thresholds.get(label, 0.5)) if _thresholds else 0.5 for label in CATEGORY_LABELS}
+        result["thresholds"] = thresholds_dict
+        result["active"] = category_flags
 
         # emotions default to 0
         for category, emotions in CATEGORY_EMOTIONS.items():
             for e in emotions:
                 result[e] = 0.0
 
-        dominant_category = max(category_probs, key=category_probs.get, default="")
+        # Determine dominant_category from thresholded positives if any, else fallback to max prob
+        active_labels = [label for label, active in category_flags.items() if active]
+        if active_labels:
+            # Among active labels, pick the one with highest prob
+            dominant_category = max(active_labels, key=lambda lbl: category_probs.get(lbl, 0.0))
+        else:
+            dominant_category = max(category_probs, key=category_probs.get, default="")
+
         result['dominant_category'] = dominant_category
         result['dominant_category_score'] = category_probs.get(dominant_category, 0.0)
         emotions_in_dominant = CATEGORY_EMOTIONS.get(dominant_category, [])
@@ -230,11 +300,20 @@ def predict_toxicity(texts):
     return results
 
 
-def _zero_result():
+def _zero_result() -> Dict[str, Any]:
+    """
+    Generate a zeroed-out result dictionary for toxicity prediction.
+
+    Returns:
+        A dictionary with all category and emotion scores set to 0,
+        and dominant category and scores set to empty or zero.
+    """
     r = {label: 0.0 for label in CATEGORY_LABELS}
     for emotions in CATEGORY_EMOTIONS.values():
         for e in emotions:
             r[e] = 0.0
     r['dominant_category'] = ''
     r['dominant_category_score'] = 0.0
+    r['top_emotion'] = ''
+    r['top_emotion_score'] = 0.0
     return r

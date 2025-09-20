@@ -5,7 +5,8 @@ import joblib
 import numpy as np
 import pandas as pd
 import tensorflow_datasets as tfds
-
+from datasets import load_dataset
+from cyberprint.label_mapping import JIGSAW_TO_FLAT_MAPPING
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -24,7 +25,7 @@ JIGSAW_PATH = os.path.join(
     "jigsaw", "jigsaw-toxic-comment-classification-challenge", "train.csv"
 )
 
-ARTIFACT_DIR = os.path.join(PROJECT_ROOT, "models", "ml")
+ARTIFACT_DIR = os.path.join(PROJECT_ROOT, "cyberprint", "models", "ml")
 os.makedirs(ARTIFACT_DIR, exist_ok=True)
 VECTORIZER_PATH = os.path.join(ARTIFACT_DIR, "polished_vectorizer.joblib")
 MODEL_PATH = os.path.join(ARTIFACT_DIR, "polished_model.joblib")
@@ -109,6 +110,18 @@ def load_goemotions():
     return pd.DataFrame(rows)
 
 # ---------------------------------------------------------
+# Load Emotion
+# ---------------------------------------------------------
+def load_emotion():
+    ds = load_dataset("emotion", split="train")
+    rows = []
+    for ex in ds:
+        txt = clean_text(ex["text"])
+        lbl = int(ex["label"])
+        rows.append({"text": txt, "labels": [lbl]})
+    return pd.DataFrame(rows)
+
+# ---------------------------------------------------------
 # Load datasets
 # ---------------------------------------------------------
 if not os.path.exists(JIGSAW_PATH):
@@ -116,49 +129,72 @@ if not os.path.exists(JIGSAW_PATH):
 
 df_jig = pd.read_csv(JIGSAW_PATH)
 df_go = load_goemotions()
+df_emo = load_emotion()
 
 df_jig["comment_text"] = df_jig["comment_text"].apply(clean_text)
 df_go["text"] = df_go["text"].apply(clean_text)
+df_emo["text"] = df_emo["text"].apply(clean_text)
 
 # ---------------------------------------------------------
 # Labels
 # ---------------------------------------------------------
 from cyberprint.label_mapping import JIGSAW_TO_FLAT_MAPPING
 
-cats_jig = list(set(JIGSAW_TO_FLAT_MAPPING.values()))
-GOEMOTIONS_CATEGORIES = [
-    'admiration','amusement','anger','annoyance','approval',
-    'caring','confusion','curiosity','desire','disappointment',
-    'disapproval','disgust','embarrassment','excitement','fear',
-    'gratitude','grief','joy','love','nervousness','optimism',
-    'pride','realization','relief','remorse','sadness','surprise','neutral'
-]
+FINAL_LABELS = ["harmful", "critical", "supportive", "neutral"]
 
-CATEGORIES = sorted(set(cats_jig + GOEMOTIONS_CATEGORIES))
+CATEGORIES = FINAL_LABELS
 cat_to_idx = {c: i for i, c in enumerate(CATEGORIES)}
 
-# Jigsaw Y
+# Emotion dataset labels (index to string)
+Emotion_labels = [
+    "anger","disgust","fear","joy","neutral","sadness","surprise"
+]
+
+# Jigsaw Y (map via JIGSAW_TO_FLAT_MAPPING and filter to FINAL_LABELS)
 y_jig = np.zeros((len(df_jig), len(CATEGORIES)), dtype=np.int8)
 for orig, flat in JIGSAW_TO_FLAT_MAPPING.items():
-    if orig in df_jig.columns:
+    if orig in df_jig.columns and flat in CATEGORIES:
         idx = cat_to_idx[flat]
         y_jig[:, idx] = np.maximum(y_jig[:, idx], df_jig[orig].astype(int).values)
 X_jig = df_jig["comment_text"].values
 
-# GoEmotions Y
+# GoEmotions Y (map only neutral → neutral, else ignore for now)
 y_go = np.zeros((len(df_go), len(CATEGORIES)), dtype=np.int8)
 for i, row in df_go.iterrows():
     for lbl in row["labels"]:
         if 0 <= int(lbl) < len(GOEMOTIONS_CATEGORIES):
             cat = GOEMOTIONS_CATEGORIES[int(lbl)]
-            y_go[i, cat_to_idx[cat]] = 1
+            if cat == "neutral":
+                y_go[i, cat_to_idx["neutral"]] = 1
 X_go = df_go["text"].values
+
+# Emotion Y (map neutral, joy→supportive, anger/disgust/fear→harmful, sadness→critical, surprise→neutral)
+EMO_MAP = {
+    "neutral": "neutral",
+    "joy": "supportive",
+    "anger": "harmful",
+    "disgust": "harmful",
+    "fear": "harmful",
+    "sadness": "critical",
+    "surprise": "neutral"
+}
+y_emo = np.zeros((len(df_emo), len(CATEGORIES)), dtype=np.int8)
+for i, row in df_emo.iterrows():
+    for lbl in row["labels"]:
+        idx_label = int(lbl)
+        if 0 <= idx_label < len(Emotion_labels):
+            emo_cat = Emotion_labels[idx_label]
+            if emo_cat in EMO_MAP:
+                mapped = EMO_MAP[emo_cat]
+                if mapped in CATEGORIES:
+                    y_emo[i, cat_to_idx[mapped]] = 1
+X_emo = df_emo["text"].values
 
 # ---------------------------------------------------------
 # Merge
 # ---------------------------------------------------------
-X_all = np.concatenate([X_jig, X_go], axis=0)
-Y_all = np.vstack([y_jig, y_go])
+X_all = np.concatenate([X_jig, X_go, X_emo], axis=0)
+Y_all = np.vstack([y_jig, y_go, y_emo])
 
 # ---------------------------------------------------------
 # Split + vectorize

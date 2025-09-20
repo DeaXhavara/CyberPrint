@@ -8,7 +8,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
+
+def get_youtube_client():
+    """Initialize YouTube API client only when needed."""
+    if not YOUTUBE_API_KEY:
+        raise ValueError("YOUTUBE_API_KEY environment variable not set")
+    return build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
 
 def extract_channel_id(url: str) -> str:
     """
@@ -26,6 +31,7 @@ def extract_channel_id(url: str) -> str:
     match = re.search(r"youtube\.com/user/([a-zA-Z0-9_-]+)", url)
     if match:
         username = match.group(1)
+        youtube = get_youtube_client()
         response = youtube.channels().list(part="id", forUsername=username).execute()
         if response["items"]:
             return response["items"][0]["id"]
@@ -34,6 +40,7 @@ def extract_channel_id(url: str) -> str:
     match = re.search(r"youtube\.com/@([a-zA-Z0-9_-]+)", url)
     if match:
         handle = match.group(1)
+        youtube = get_youtube_client()
         response = youtube.search().list(part="snippet", q=handle, type="channel", maxResults=1).execute()
         if response["items"]:
             return response["items"][0]["snippet"]["channelId"]
@@ -44,10 +51,15 @@ def extract_channel_id(url: str) -> str:
 def fetch_youtube_comments(channel_url: str, max_comments: int = 50):
     """
     Fetch comments that others have made on a YouTube channel's videos.
-    This analyzes the feedback/sentiment the channel receives from viewers.
     """
     if not YOUTUBE_API_KEY:
         print("[YouTube Fetcher] YouTube API key not found. Please set YOUTUBE_API_KEY in .env file")
+        return []
+    
+    try:
+        youtube = get_youtube_client()
+    except Exception as e:
+        print(f"[YouTube Fetcher] Failed to initialize YouTube client: {e}")
         return []
         
     channel_id = extract_channel_id(channel_url)

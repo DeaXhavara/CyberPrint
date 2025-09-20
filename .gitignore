@@ -76,6 +76,8 @@ data/
 !cyberprint/data/processed/
 !cyberprint/data/active_learning/
 !cyberprint/data/raw/datasets/*.csv
+!cyberprint/data/scrapers/
+!cyberprint/data/scrapers/*.py
 
 # Node modules
 node_modules/

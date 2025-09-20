@@ -1,0 +1,14 @@
+{
+  "labels": [
+    "harmful",
+    "critical",
+    "supportive",
+    "neutral"
+  ],
+  "thresholds": {
+    "harmful": 0.7100000000000001,
+    "critical": 0.6900000000000001,
+    "supportive": 0.8300000000000001,
+    "neutral": 0.2
+  }
+}

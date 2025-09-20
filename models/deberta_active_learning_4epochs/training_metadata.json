@@ -1,0 +1,43 @@
+{
+  "sentiment_labels": [
+    "positive",
+    "negative",
+    "neutral",
+    "yellow_flag"
+  ],
+  "sublabel_labels": [
+    "general",
+    "sarcasm",
+    "compliments",
+    "irony",
+    "emotional_distress",
+    "gratitude",
+    "fact_based",
+    "informational",
+    "question_based",
+    "constructive_feedback",
+    "harsh_criticism",
+    "internet_slang",
+    "reinforcing_positive_actions",
+    "insulting",
+    "threatening",
+    "offensive",
+    "joy_happiness",
+    "humor",
+    "mixed_sentiment",
+    "conditional",
+    "frustration"
+  ],
+  "training_args": {
+    "epochs": 4,
+    "out_dir": "/Users/deaxhavara/CyberPrint/models/deberta_active_learning_4epochs",
+    "model_name": "microsoft/deberta-v3-base",
+    "max_length": 256,
+    "batch_size": 8,
+    "learning_rate": 2e-05,
+    "sublabel_weight": 0.3
+  },
+  "training_date": "2025-09-13T14:28:39.234139",
+  "dataset_size": 55739,
+  "gold_standard_count": 68
+}

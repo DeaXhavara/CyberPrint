@@ -30,14 +30,11 @@ class CyberPrintMLPredictor:
                 from cyberprint.models.ml.deberta_predictor import DeBERTaPredictor
                 self.predictor = DeBERTaPredictor(deberta_model_dir)
                 self.predictor_type = "deberta"
-                logger.error(f"SUCCESS: DeBERTa model loaded from {deberta_model_dir}")
+                logger.info("Using DeBERTa model for predictions")
             except Exception as e:
-                logger.error(f"FAILED: DeBERTa model loading failed: {e}")
-                import traceback
-                logger.error(traceback.format_exc())
+                logger.warning(f"Failed to load DeBERTa model: {e}")
                 self._init_logistic_regression(model_dir)
         else:
-            logger.error(f"FAILED: DeBERTa directory not found: {deberta_model_dir}")
             self._init_logistic_regression(model_dir)
         
         # Initialize additional components
@@ -48,7 +45,6 @@ class CyberPrintMLPredictor:
     
     def _init_logistic_regression(self, model_dir: str = None):
         """Initialize logistic regression fallback model."""
-        logger.error("FALLBACK: Using logistic regression - this causes 38% confidence!")
         if model_dir is None:
             model_dir = os.path.join(os.path.dirname(__file__), "cyberprint", "models", "ml")
         

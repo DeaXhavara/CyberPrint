@@ -32,8 +32,12 @@ from pathlib import Path
 import json
 from datetime import datetime
 
-# Import our dataset builder
-from .data.build_balanced_dataset import CyberPrintDatasetBuilder
+# Import our dataset builder (only if available for local development)
+try:
+    from .data.build_balanced_dataset import CyberPrintDatasetBuilder
+except ImportError:
+    # For deployment, we don't need the dataset builder
+    CyberPrintDatasetBuilder = None
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -178,7 +182,7 @@ class CyberPrintPipeline:
         os.makedirs(os.path.join(self.output_dir, "analytics"), exist_ok=True)
         
         # Initialize components
-        self.dataset_builder = CyberPrintDatasetBuilder()
+        self.dataset_builder = CyberPrintDatasetBuilder() if CyberPrintDatasetBuilder else None
         self.sub_label_classifier = SubLabelClassifier()
         
         # Load or build the main dataset
@@ -193,9 +197,13 @@ class CyberPrintPipeline:
             logger.info("Loading existing main dataset...")
             self.main_dataset = pd.read_csv(dataset_path)
         else:
-            logger.info("Building main dataset...")
-            self.main_dataset = self.dataset_builder.build_dataset()
-            self.dataset_builder.save_dataset(self.main_dataset)
+            if self.dataset_builder:
+                logger.info("Building main dataset...")
+                self.main_dataset = self.dataset_builder.build_dataset()
+                self.dataset_builder.save_dataset(self.main_dataset)
+            else:
+                logger.warning("Dataset builder not available, creating empty dataset")
+                self.main_dataset = pd.DataFrame()
         
         logger.info(f"Loaded main dataset with {len(self.main_dataset)} examples")
     

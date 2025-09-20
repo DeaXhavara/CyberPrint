@@ -34,7 +34,7 @@ app = FastAPI(title="CyberPrint API", description="Advanced Sentiment Analysis P
 # Enable CORS for frontend development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:53646"],  # React dev server + proxy
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:53646", "https://cyberprintapp-production.up.railway.app"],  # React dev server + proxy + Railway frontend
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],

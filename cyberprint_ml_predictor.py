@@ -21,10 +21,21 @@ class CyberPrintMLPredictor:
     """ML predictor using trained DeBERTa model with fallback to Logistic Regression."""
     
     def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True):
-        # Force use of logistic regression for Railway deployment
-        # DeBERTa model files are too large for Railway deployment
-        logger.info("Using Logistic Regression model for Railway deployment")
-        self._init_logistic_regression(model_dir)
+        # Try DeBERTa model first
+        deberta_model_dir = os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_enhanced")
+        
+        if os.path.exists(deberta_model_dir):
+            # Use DeBERTa predictor
+            try:
+                from cyberprint.models.ml.deberta_predictor import DeBERTaPredictor
+                self.predictor = DeBERTaPredictor(deberta_model_dir)
+                self.predictor_type = "deberta"
+                logger.info("Using DeBERTa model for predictions")
+            except Exception as e:
+                logger.warning(f"Failed to load DeBERTa model: {e}")
+                self._init_logistic_regression(model_dir)
+        else:
+            self._init_logistic_regression(model_dir)
         
         # Initialize additional components
         self.labels = ['positive', 'negative', 'neutral', 'yellow_flag']

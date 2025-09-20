@@ -8,7 +8,7 @@ import gsap from 'gsap';
 
 const LandingPage = () => {
   const [url, setUrl] = useState('');
-  const [platform, setPlatform] = useState('reddit');
+  // const [platform, setPlatform] = useState('reddit');
   const [numComments, setNumComments] = useState(50);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

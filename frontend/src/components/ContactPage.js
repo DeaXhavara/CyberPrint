@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, MapPin, Shield, Zap, Search, TrendingUp, Eye, BarChart3, Lock, Database, Code, Users } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 import Footer from './Footer';
 
 const ContactPage = () => {

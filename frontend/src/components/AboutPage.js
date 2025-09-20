@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Brain, MessageCircle, Shield, Zap, Search, TrendingUp, Eye, BarChart3, Lock, Database, Activity, Bot, Lightbulb, Award, Target, Globe } from 'lucide-react';
+import { ArrowLeft, Brain, Shield, Zap, TrendingUp, Database, Bot, Lightbulb, Award, Target, Globe } from 'lucide-react';
 import Footer from './Footer';
 
 const AboutPage = () => {

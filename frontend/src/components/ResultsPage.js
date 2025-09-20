@@ -66,7 +66,8 @@ const ResultsPage = () => {
 
   const handleDownloadPDF = () => {
     if (pdf_path) {
-      window.open(`http://localhost:8000${pdf_path}`, '_blank');
+      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+      window.open(`${apiUrl}${pdf_path}`, '_blank');
     }
   };
 

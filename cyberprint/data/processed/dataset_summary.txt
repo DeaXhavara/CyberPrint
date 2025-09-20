@@ -1,0 +1,20 @@
+CyberPrint Dataset Summary
+========================
+
+Total examples: 99849
+Target per class: 20000
+
+Sentiment distribution:
+  neutral: 28161
+  positive: 26363
+  negative: 25476
+  yellow_flag: 19849
+
+Source distribution:
+  Suicide_Detection.csv: 50918
+  sarcasm: 20103
+  twitter_twitter_dataset.csv: 17514
+  generated_positive: 5614
+  jigsaw: 5451
+  sentiment.csv: 179
+  Equal.csv: 70

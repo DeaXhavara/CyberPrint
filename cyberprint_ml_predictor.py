@@ -21,13 +21,18 @@ class CyberPrintMLPredictor:
     """ML predictor using trained DeBERTa model with fallback to Logistic Regression."""
     
     def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True):
-        # Try DeBERTa model first - use the 4-epoch active learning model with correct labels
-        possible_dirs = [
-            os.path.join(os.path.dirname(__file__), "models", "deberta_active_learning_4epochs"),
-            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_full_e4"),
-            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_full"),
-            os.path.join(os.path.dirname(__file__), "cyberprint", "models", "deberta_enhanced")
-        ]
+        # FORCE use of the correct 4-epoch active learning model - no fallbacks
+        deberta_model_dir = os.path.join(os.path.dirname(__file__), "models", "deberta_active_learning_4epochs")
+        
+        # Log the absolute path for debugging
+        logger.info(f"Forcing DeBERTa model path: {os.path.abspath(deberta_model_dir)}")
+        logger.info(f"Directory exists: {os.path.exists(deberta_model_dir)}")
+        if os.path.exists(deberta_model_dir):
+            files = os.listdir(deberta_model_dir)[:10]
+            logger.info(f"Directory contents: {files}")
+        
+        # Don't check other directories - force this one only
+        possible_dirs = [deberta_model_dir]
         
         deberta_model_dir = None
         for dir_path in possible_dirs:
@@ -40,11 +45,14 @@ class CyberPrintMLPredictor:
                 from cyberprint.models.ml.deberta_predictor import DeBERTaPredictor
                 self.predictor = DeBERTaPredictor(deberta_model_dir)
                 self.predictor_type = "deberta"
-                logger.info("Using DeBERTa model for predictions")
+                logger.info(f"SUCCESS: Using DeBERTa model from {deberta_model_dir}")
             except Exception as e:
-                logger.warning(f"Failed to load DeBERTa model: {e}")
+                logger.error(f"FAILED to load DeBERTa model from {deberta_model_dir}: {e}")
+                import traceback
+                logger.error(traceback.format_exc())
                 self._init_logistic_regression(model_dir)
         else:
+            logger.error(f"DeBERTa model directory not found. Checked: {possible_dirs}")
             self._init_logistic_regression(model_dir)
         
         # Initialize additional components
@@ -55,11 +63,13 @@ class CyberPrintMLPredictor:
     
     def _init_logistic_regression(self, model_dir: str = None):
         """Initialize logistic regression fallback model."""
+        logger.error("FALLBACK: Using logistic regression instead of DeBERTa - this will cause low confidence!")
         if model_dir is None:
             model_dir = os.path.join(os.path.dirname(__file__), "cyberprint", "models", "ml")
         
         self.model_path = os.path.join(model_dir, "cyberprint_ml_model.joblib")
         self.vectorizer_path = os.path.join(model_dir, "cyberprint_vectorizer.joblib")
+        self.predictor_type = "logistic_regression"
         
         # Try alternative paths if main ones don't exist
         if not os.path.exists(self.model_path):

@@ -57,12 +57,13 @@ logs/
 # Models and data (too large for git)
 models/
 cyberprint/models/deberta_*/
-cyberprint/models/ml/*.joblib
 cyberprint/models/ml/transformer_*/
-*.joblib
-*.pkl
 *.safetensors
 *.bin
+
+# Keep essential model files for Railway deployment
+!cyberprint/models/ml/*.joblib
+!cyberprint/models/sublabel_classifier.py
 
 # Data directories - exclude large raw datasets but keep processed ones
 cyberprint/data/raw/datasets/jigsaw*/

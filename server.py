@@ -21,6 +21,7 @@ import logging
 # Add the current directory to Python path
 sys.path.insert(0, str(Path(__file__).parent))
 
+from cyberprint_ml_predictor import CyberPrintMLPredictor
 from cyberprint.pipeline import CyberPrintPipeline
 from cyberprint.data.scrapers.reddit_fetcher import fetch_reddit_comments_by_user
 from cyberprint.data.scrapers.youtube_fetcher import fetch_youtube_comments

@@ -10,12 +10,12 @@ CyberPrint is a sentiment analysis application using DeBERTa transformer model.
 Add these to your Hugging Face Space settings under "Variables and secrets":
 
 ```
-REDDIT_CLIENT_ID = HeasTXaPckYo0kbnvhcKig
-REDDIT_CLIENT_SECRET = NTA26_bJtjiG2-GzFpi1UJyAX1ZV9g
-REDDIT_USERNAME = SearchTraditional695
-REDDIT_PASSWORD = SearchTraditional695
-REDDIT_USER_AGENT = CyberPrint/0.1 by SearchTraditional695
-YOUTUBE_API_KEY = AIzaSyCYEaEIo1e2DSzR2B0-vJGoP4MZEtbFNPA
+REDDIT_CLIENT_ID = your_reddit_client_id
+REDDIT_CLIENT_SECRET = your_reddit_client_secret
+REDDIT_USERNAME = your_reddit_username
+REDDIT_PASSWORD = your_reddit_password
+REDDIT_USER_AGENT = CyberPrint/0.1 by your_username
+YOUTUBE_API_KEY = your_youtube_api_key
 ```
 
 ## Deployment Notes

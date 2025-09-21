@@ -71,8 +71,6 @@ class CyberPrintMLPredictor:
         
         # Initialize additional components
         self.labels = ['positive', 'negative', 'neutral', 'yellow_flag']
-        self.sub_label_classifier = None
-        self.misclassification_detector = None
         self._initialize_enhancers(enable_active_learning=True)
     
     def _init_logistic_regression(self, model_dir: str = None):
@@ -97,8 +95,15 @@ class CyberPrintMLPredictor:
         self.model = None
         self.vectorizer = None
         self.predictor_type = "logistic_regression"
-        self.load_model()
-        logger.info("Using Logistic Regression model for predictions")
+        self.predictor = self  # Set self as predictor for logistic regression
+        try:
+            self.load_model()
+            logger.info("Using Logistic Regression model for predictions")
+        except Exception as e:
+            logger.error(f"Failed to load logistic regression model: {e}")
+            # Create a dummy fallback
+            self.model = None
+            self.vectorizer = None
     
     def _init_additional_components(self, enable_gpt_oss: bool, enable_active_learning: bool):
         self._initialize_enhancers(enable_gpt_oss, enable_active_learning)
@@ -523,7 +528,14 @@ def predict_text(texts: Union[str, List[str]],
         confidence_threshold: Threshold for confidence scoring
         
     Returns:
-        List of enhanced prediction dictionaries
+        List of prediction dictionaries with enhanced features
     """
-    predictor = get_predictor()
-    return predictor.predict_text(texts, include_sub_labels, confidence_threshold)
+    try:
+        predictor = get_predictor()
+        return predictor.predict(texts, include_sub_labels, confidence_threshold)
+    except Exception as e:
+        logger.error(f"Main predictor failed: {e}")
+        logger.info("Falling back to simple rule-based predictor")
+        # Import and use simple predictor as fallback
+        from simple_predictor import predict_text as simple_predict
+        return simple_predict(texts, include_sub_labels, confidence_threshold)

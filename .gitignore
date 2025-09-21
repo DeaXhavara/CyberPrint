@@ -91,3 +91,13 @@ yarn-error.log*
 build/
 dist/
 frontend/.env.production
+
+# Deployment configuration files
+railway.toml
+vercel.json
+netlify.toml
+render.yaml
+**/deploy*.py
+**/*railway*.py
+**/*vercel*.py
+**/*netlify*.py

@@ -45,4 +45,4 @@ ENV PYTHONUNBUFFERED=1
 ENV PORT=7860
 
 # Run the application
-CMD ["python", "-c", "import uvicorn; from server import app; uvicorn.run(app, host='0.0.0.0', port=7860)"]
+CMD ["python", "server.py"]

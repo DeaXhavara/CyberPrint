@@ -241,8 +241,12 @@ def generate_insights(analytics: Dict[str, Any], platform: str) -> Dict[str, lis
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
     return {"message": "CyberPrint API is running", "version": "1.0.0"}
+
+@app.get("/health")
+async def health_check():
+    """Simple health check that responds immediately"""
+    return {"status": "healthy", "timestamp": "2024-01-01"}
 
 @app.post("/analyze")
 async def analyze_profile(request: AnalysisRequest) -> Dict[str, Any]:

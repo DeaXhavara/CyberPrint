@@ -20,7 +20,22 @@ logger = logging.getLogger(__name__)
 class CyberPrintMLPredictor:
     """ML predictor using trained DeBERTa model with fallback to Logistic Regression."""
     
-    def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True):
+    def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True, use_ensemble: bool = True):
+        # Try ensemble first for highest confidence
+        if use_ensemble:
+            try:
+                from cyberprint.models.ml.ensemble_predictor import create_cyberprint_ensemble
+                self.predictor = create_cyberprint_ensemble()
+                self.predictor_type = "ensemble"
+                logger.info("Using ensemble predictor for highest confidence")
+            except Exception as e:
+                logger.warning(f"Failed to load ensemble: {e}")
+                self._init_single_model(model_dir)
+        else:
+            self._init_single_model(model_dir)
+    
+    def _init_single_model(self, model_dir: str = None):
+        """Initialize single model (DeBERTa or logistic regression)"""
         # Try DeBERTa model first - use the 4-epoch active learning model
         deberta_model_dir = os.path.join(os.path.dirname(__file__), "models", "deberta_active_learning_4epochs")
         
@@ -182,8 +197,10 @@ class CyberPrintMLPredictor:
             texts = [texts]
         
         try:
-            # Use DeBERTa model if available
-            if hasattr(self, 'predictor') and self.predictor_type == "deberta":
+            # Use ensemble for highest confidence, then DeBERTa, then logistic regression
+            if hasattr(self, 'predictor') and self.predictor_type == "ensemble":
+                return self._predict_with_ensemble(texts, include_sub_labels, confidence_threshold)
+            elif hasattr(self, 'predictor') and self.predictor_type == "deberta":
                 return self._predict_with_deberta(texts, include_sub_labels, confidence_threshold)
             else:
                 return self._predict_with_logistic_regression(texts, include_sub_labels, confidence_threshold)
@@ -198,6 +215,33 @@ class CyberPrintMLPredictor:
                     "applied_rules": [],
                     "enhanced": False,
                     "enhancement_metadata": {}} for _ in texts]
+    
+    def _predict_with_ensemble(self, texts: List[str], include_sub_labels: bool, confidence_threshold: float) -> List[Dict[str, any]]:
+        """Predict using ensemble of models for highest confidence."""
+        try:
+            # Use ensemble predictor directly
+            results = self.predictor.predict_batch(texts)
+            
+            # Apply sub-label classification if enabled
+            if include_sub_labels and self.sub_label_classifier:
+                for i, (text, result) in enumerate(zip(texts, results)):
+                    try:
+                        sub_label, sub_confidence = self.sub_label_classifier.classify(text)
+                        applied_rules = self.sub_label_classifier.get_applied_rules()
+                        result.update({
+                            "sub_label": sub_label,
+                            "sub_label_confidence": sub_confidence,
+                            "applied_rules": applied_rules
+                        })
+                    except Exception as e:
+                        logger.warning(f"Sub-label classification failed: {e}")
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Ensemble prediction failed: {e}")
+            # Fallback to DeBERTa
+            return self._predict_with_deberta(texts, include_sub_labels, confidence_threshold)
     
     def _predict_with_deberta(self, texts: List[str], include_sub_labels: bool, confidence_threshold: float) -> List[Dict[str, any]]:
         """Predict using DeBERTa model."""
@@ -295,11 +339,8 @@ class CyberPrintMLPredictor:
                 predicted_label = max(probs_dict, key=probs_dict.get)
                 base_score = probs_dict[predicted_label]
                 
-                # Boost confidence for better user experience (minimum 93.4%)
-                if base_score > 0.2:
-                    predicted_score = max(0.934, min(0.97, base_score + 0.7))
-                else:
-                    predicted_score = base_score
+                # Use authentic model confidence
+                predicted_score = base_score
                 
                 # Initialize result dictionary
                 result = {

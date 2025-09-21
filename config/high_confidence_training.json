@@ -1,0 +1,78 @@
+{
+  "training": {
+    "model_name": "microsoft/deberta-v3-base",
+    "max_length": 256,
+    "epochs": 8,
+    "batch_size": 16,
+    "learning_rate": 1e-05,
+    "weight_decay": 0.01,
+    "warmup_steps": 500,
+    "gradient_accumulation_steps": 2,
+    "max_grad_norm": 1.0,
+    "label_smoothing": 0.1,
+    "dropout": 0.1,
+    "train_test_split": 0.8,
+    "stratify": true,
+    "augment_data": true,
+    "eval_steps": 100,
+    "save_steps": 500,
+    "logging_steps": 50,
+    "metric_for_best_model": "f1",
+    "load_best_model_at_end": true,
+    "output_dir": "/Users/deaxhavara/CyberPrint/models/deberta_high_confidence",
+    "save_total_limit": 3,
+    "seed": 42
+  },
+  "augmentation": {
+    "synonym_replacement": {
+      "enabled": true,
+      "ratio": 0.1,
+      "description": "Replace words with synonyms"
+    },
+    "back_translation": {
+      "enabled": false,
+      "languages": [
+        "es",
+        "fr",
+        "de"
+      ],
+      "description": "Translate to other language and back"
+    },
+    "paraphrasing": {
+      "enabled": true,
+      "ratio": 0.15,
+      "description": "Rephrase sentences while keeping meaning"
+    },
+    "noise_injection": {
+      "enabled": true,
+      "ratio": 0.05,
+      "description": "Add small amounts of noise"
+    }
+  },
+  "ensemble": {
+    "models": [
+      {
+        "name": "deberta-v3-base",
+        "model_id": "microsoft/deberta-v3-base",
+        "weight": 2.0,
+        "focus": "general_sentiment"
+      },
+      {
+        "name": "deberta-v3-small",
+        "model_id": "microsoft/deberta-v3-small",
+        "weight": 1.0,
+        "focus": "fast_inference"
+      },
+      {
+        "name": "roberta-base",
+        "model_id": "roberta-base",
+        "weight": 1.5,
+        "focus": "robustness"
+      }
+    ],
+    "voting_strategy": "weighted_soft_voting",
+    "confidence_calibration": true,
+    "agreement_threshold": 0.8
+  },
+  "calibration_code": "\nclass TemperatureScaling:\n    \"\"\"\n    Temperature scaling for confidence calibration\n    \"\"\"\n    def __init__(self):\n        self.temperature = 1.0\n    \n    def fit(self, logits, labels, lr=0.01, max_iter=50):\n        \"\"\"\n        Tune temperature using validation set\n        \"\"\"\n        import torch\n        import torch.nn.functional as F\n        from torch import optim\n        \n        # Convert to tensors\n        if not isinstance(logits, torch.Tensor):\n            logits = torch.tensor(logits, dtype=torch.float32)\n        if not isinstance(labels, torch.Tensor):\n            labels = torch.tensor(labels, dtype=torch.long)\n        \n        # Initialize temperature parameter\n        temperature = torch.ones(1, requires_grad=True)\n        optimizer = optim.LBFGS([temperature], lr=lr, max_iter=max_iter)\n        \n        def eval_loss():\n            optimizer.zero_grad()\n            scaled_logits = logits / temperature\n            loss = F.cross_entropy(scaled_logits, labels)\n            loss.backward()\n            return loss\n        \n        optimizer.step(eval_loss)\n        self.temperature = temperature.item()\n        \n        return self.temperature\n    \n    def predict(self, logits):\n        \"\"\"\n        Apply temperature scaling to logits\n        \"\"\"\n        import torch\n        import torch.nn.functional as F\n        \n        if not isinstance(logits, torch.Tensor):\n            logits = torch.tensor(logits, dtype=torch.float32)\n        \n        scaled_logits = logits / self.temperature\n        return F.softmax(scaled_logits, dim=-1)\n"
+}

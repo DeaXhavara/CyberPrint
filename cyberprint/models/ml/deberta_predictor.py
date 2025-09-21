@@ -130,11 +130,8 @@ class DeBERTaPredictor:
             probabilities = torch.nn.functional.softmax(outputs.logits, dim=-1)
             base_score = float(torch.max(probabilities).item())
             
-            # Boost confidence for better user experience (minimum 93.4%)
-            if base_score > 0.2:
-                predicted_score = max(0.934, min(0.97, base_score + 0.7))
-            else:
-                predicted_score = base_score
+            # Use authentic model confidence
+            predicted_score = base_score
             predicted_classes = torch.argmax(probabilities, dim=-1)
             confidences = torch.max(probabilities, dim=-1)[0]
         

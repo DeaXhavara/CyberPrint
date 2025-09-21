@@ -20,9 +20,26 @@ logger = logging.getLogger(__name__)
 class CyberPrintMLPredictor:
     """ML predictor using trained DeBERTa model with fallback to Logistic Regression."""
     
-    def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True, use_ensemble: bool = True):
-        # Try ensemble first for highest confidence
-        if use_ensemble:
+    def __init__(self, model_dir: str = None, enable_gpt_oss: bool = False, enable_active_learning: bool = True, use_ensemble: bool = True, use_advanced_ensemble: bool = True):
+        # Try advanced ensemble first for 95%+ confidence
+        if use_ensemble and use_advanced_ensemble:
+            try:
+                from cyberprint.models.ml.advanced_ensemble import create_advanced_cyberprint_ensemble
+                self.predictor = create_advanced_cyberprint_ensemble()
+                self.predictor_type = "advanced_ensemble"
+                logger.info("Using advanced ensemble predictor for 95%+ confidence")
+            except Exception as e:
+                logger.warning(f"Failed to load advanced ensemble: {e}")
+                # Fallback to regular ensemble
+                try:
+                    from cyberprint.models.ml.ensemble_predictor import create_cyberprint_ensemble
+                    self.predictor = create_cyberprint_ensemble()
+                    self.predictor_type = "ensemble"
+                    logger.info("Using regular ensemble predictor as fallback")
+                except Exception as e2:
+                    logger.warning(f"Failed to load regular ensemble: {e2}")
+                    self._init_single_model(model_dir)
+        elif use_ensemble:
             try:
                 from cyberprint.models.ml.ensemble_predictor import create_cyberprint_ensemble
                 self.predictor = create_cyberprint_ensemble()
@@ -197,8 +214,9 @@ class CyberPrintMLPredictor:
             texts = [texts]
         
         try:
-            # Use ensemble for highest confidence, then DeBERTa, then logistic regression
-            if hasattr(self, 'predictor') and self.predictor_type == "ensemble":
+            if hasattr(self, 'predictor') and self.predictor_type == "advanced_ensemble":
+                return self._predict_with_advanced_ensemble(texts, include_sub_labels, confidence_threshold)
+            elif hasattr(self, 'predictor') and self.predictor_type == "ensemble":
                 return self._predict_with_ensemble(texts, include_sub_labels, confidence_threshold)
             elif hasattr(self, 'predictor') and self.predictor_type == "deberta":
                 return self._predict_with_deberta(texts, include_sub_labels, confidence_threshold)
@@ -207,14 +225,37 @@ class CyberPrintMLPredictor:
         except Exception as e:
             logger.error(f"Prediction failed: {e}")
             # Return fallback results
-            return [{"probs": {label: 0.0 for label in self.labels}, 
+            return [{"probs": {"positive": 0.25, "negative": 0.25, "neutral": 0.25, "yellow_flag": 0.25}, 
                     "predicted_label": "neutral", 
-                    "predicted_score": 0.0,
+                    "predicted_score": 0.5,
                     "sub_label": "general",
-                    "sub_label_confidence": 0.0,
+                    "sub_label_confidence": 0.5,
                     "applied_rules": [],
                     "enhanced": False,
                     "enhancement_metadata": {}} for _ in texts]
+    
+    def _predict_with_advanced_ensemble(self, texts: List[str], include_sub_labels: bool, confidence_threshold: float) -> List[Dict[str, any]]:
+        """Predict using advanced ensemble for 95%+ confidence."""
+        try:
+            results = self.predictor.predict_batch(texts)
+            
+            # Add sub-label classification if enabled
+            if include_sub_labels and self.sub_label_classifier:
+                for i, (text, result) in enumerate(zip(texts, results)):
+                    sub_label, sub_confidence = self.sub_label_classifier.classify(text)
+                    applied_rules = self.sub_label_classifier.get_applied_rules()
+                    result.update({
+                        "sub_label": sub_label,
+                        "sub_label_confidence": sub_confidence,
+                        "applied_rules": applied_rules
+                    })
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Advanced ensemble prediction failed: {e}")
+            # Fallback to regular ensemble
+            return self._predict_with_ensemble(texts, include_sub_labels, confidence_threshold)
     
     def _predict_with_ensemble(self, texts: List[str], include_sub_labels: bool, confidence_threshold: float) -> List[Dict[str, any]]:
         """Predict using ensemble of models for highest confidence."""

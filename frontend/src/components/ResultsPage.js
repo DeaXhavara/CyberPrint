@@ -216,7 +216,7 @@ const ResultsPage = () => {
             </div>
             <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-4">
               <p className="text-sm text-green-300">
-                <strong>💡 Pro Tip:</strong> {profile.platform === 'youtube' ? 'This analysis shows audience feedback patterns that can help content creators understand their community better.' : 'Share CyberPrint with them so they can get their own personalized insights and improve their online communication!'}
+                <strong>Pro Tip:</strong> {profile.platform === 'youtube' ? 'This analysis shows audience feedback patterns that can help content creators understand their community better.' : 'Share CyberPrint with them so they can get their own personalized insights and improve their online communication!'}
               </p>
             </div>
           </div>

@@ -53,7 +53,11 @@ class AdvancedEnsemblePredictor:
             
             for model_info in self.models:
                 try:
-                    if hasattr(model_info['model'], 'predict'):
+                    if hasattr(model_info['model'], 'predict_text'):
+                        pred = model_info['model'].predict_text([text])[0]
+                    elif hasattr(model_info['model'], 'predict_batch'):
+                        pred = model_info['model'].predict_batch([text])[0]
+                    elif hasattr(model_info['model'], 'predict'):
                         pred = model_info['model'].predict([text])[0]
                     else:
                         # Fallback for different model interfaces
@@ -115,8 +119,8 @@ class AdvancedEnsemblePredictor:
             base_confidence, predictions, uncertainty_metrics, best_label
         )
         
-        # 5. Final confidence with safety checks
-        final_confidence = min(0.99, enhanced_confidence)
+        # 5. Final confidence with proper bounds (0.0 to 1.0)
+        final_confidence = max(0.0, min(1.0, enhanced_confidence))
         
         # 6. Determine confidence level
         confidence_level = self._get_confidence_level(final_confidence, uncertainty_metrics)
@@ -178,28 +182,11 @@ class AdvancedEnsemblePredictor:
     
     def _multi_stage_enhancement(self, base_confidence: float, predictions: List[Dict], 
                                uncertainty: Dict, predicted_label: str) -> float:
-        """Multi-stage confidence enhancement for 95%+ target"""
+        """Authentic confidence - no artificial boosting"""
         
-        enhanced = base_confidence
-        
-        # Stage 1: Agreement-based boost
-        agreement_boost = self._calculate_agreement_boost(predictions, predicted_label)
-        enhanced += agreement_boost
-        
-        # Stage 2: Performance-weighted boost
-        performance_boost = self._calculate_performance_boost(predictions, predicted_label)
-        enhanced += performance_boost
-        
-        # Stage 3: Uncertainty penalty/reward
-        uncertainty_adjustment = self._calculate_uncertainty_adjustment(uncertainty)
-        enhanced += uncertainty_adjustment
-        
-        # Stage 4: Confidence calibration
-        calibrated = self._apply_advanced_calibration(enhanced)
-        
-        # Stage 5: Final boost for high-confidence cases
-        if calibrated >= 0.85 and uncertainty['total_uncertainty'] < 0.1:
-            calibrated += 0.08  # Extra boost for very confident, low-uncertainty predictions
+        # Return the base confidence without artificial enhancements
+        # Only apply calibration for better probability estimates
+        calibrated = self._apply_advanced_calibration(base_confidence)
         
         return calibrated
     

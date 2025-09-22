@@ -30,6 +30,10 @@ class EnhancedSubLabelClassifier:
         self.rules = self._initialize_rules()
         self.applied_rules_log = []
     
+    def get_applied_rules(self) -> List[str]:
+        """Return the list of applied rules for the last classification."""
+        return self.applied_rules_log.copy()
+    
     def _initialize_rules(self) -> Dict[str, Dict[str, SubLabelRule]]:
         """Initialize comprehensive rule sets for each sentiment category."""
         
@@ -450,6 +454,13 @@ class EnhancedSubLabelClassifier:
         }
     
         return rules
+    
+    def classify(self, text: str) -> Tuple[str, float]:
+        """
+        Main classify method for compatibility.
+        """
+        sub_label, confidence, _ = self.classify_sub_label(text, "neutral", log_rules=False)
+        return sub_label, confidence
     
     def classify_sub_label(self, text: str, main_sentiment: str, log_rules: bool = True) -> Tuple[str, float, List[str]]:
         """

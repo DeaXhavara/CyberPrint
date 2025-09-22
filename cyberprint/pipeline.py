@@ -300,6 +300,13 @@ class CyberPrintPipeline:
             df['yellow_flag'] = yellow_flags
             df['applied_rules'] = applied_rules_list
             df['gpt_enhanced'] = enhanced_flags
+            df['enhanced'] = enhanced_flags
+            
+            # Add enhancement metadata for each prediction
+            enhancement_metadata_list = []
+            for pred in predictions:
+                enhancement_metadata_list.append(pred.get('enhancement_metadata', {}))
+            df['enhancement_metadata'] = enhancement_metadata_list
             
             # Log rule application statistics
             total_rules_applied = sum(len(rules) for rules in applied_rules_list)
@@ -851,18 +858,11 @@ class CyberPrintPipeline:
                     main_sentiment_display = sentiment.replace('_', ' ').title()
                     sub_label_display = sub_label.replace('_', ' ').title()
                     
+                    # Always show both main sentiment and sub-label (original behavior)
                     if sub_label != 'general':
-                        label_text = f"({main_sentiment_display} - {sub_label_display}: {confidence:.1f}%"
-                        if sub_confidence > 0:
-                            label_text += f", Sub-label confidence: {sub_confidence:.1f}%"
-                        if enhanced:
-                            label_text += " [GPT-Enhanced]"
-                        label_text += ")"
+                        label_text = f"({main_sentiment_display} - {sub_label_display}: {confidence:.1f}%)"
                     else:
-                        label_text = f"({main_sentiment_display}: {confidence:.1f}%"
-                        if enhanced:
-                            label_text += " [GPT-Enhanced]"
-                        label_text += ")"
+                        label_text = f"({main_sentiment_display}: {confidence:.1f}%)"
                     
                     # Create prettier comment styling
                     comment_style = ParagraphStyle(
@@ -1160,7 +1160,7 @@ class CyberPrintPipeline:
             # Import prediction module for confidence scores
             import sys
             sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-            from predict import predict_text
+            from cyberprint_ml_predictor import predict_text
             
             if output_path is None:
                 output_path = os.path.join(

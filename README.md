@@ -40,6 +40,10 @@ git lfs pull  # Download large model files
 
 ### 2. Backend Setup
 ```bash
+# Create and activate virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
 # Install Python dependencies
 pip install -r requirements.txt
 
@@ -57,7 +61,8 @@ cd ..
 
 ### 4. Run the Application
 ```bash
-# Terminal 1: Start backend server
+# Terminal 1: Start backend server (make sure venv is activated)
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 python server.py
 
 # Terminal 2: Start frontend (in a new terminal)

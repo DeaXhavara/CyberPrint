@@ -101,8 +101,8 @@ class EnsemblePredictor:
             # Apply temperature scaling for better calibration
             calibrated_confidence = self._apply_temperature_scaling(ensemble_confidence)
             
-            # Combine calibrated confidence with agreement boost
-            final_confidence = min(0.99, calibrated_confidence + agreement_boost)
+            # Combine calibrated confidence with agreement boost - use authentic confidence with proper bounds
+            final_confidence = max(0.0, min(1.0, calibrated_confidence + agreement_boost))
             
             result = {
                 'probs': combined_probs,

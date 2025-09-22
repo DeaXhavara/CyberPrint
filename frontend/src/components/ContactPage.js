@@ -75,7 +75,7 @@ const ContactPage = () => {
             Get in <span className="text-gradient">Touch</span>
           </h1>
           <p className="text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed font-light">
-            Have questions, feedback, or need support? We'd love to hear from you. 
+            Have questions, feedback, or need support? 
             Reach out and let's improve digital communication together.
           </p>
         </header>

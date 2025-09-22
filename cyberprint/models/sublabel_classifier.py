@@ -283,11 +283,11 @@ class EnhancedSubLabelClassifier:
                 'simple_negative': SubLabelRule(
                     name='simple_negative',
                     keywords=[
-                        'bad', 'wrong', 'no', 'nope', 'nah', 'disagree', 'false',
+                        'bad', 'wrong', 'nope', 'nah', 'disagree', 'false',
                         'incorrect', 'untrue', 'not true', 'not right'
                     ],
                     patterns=[
-                        r'^(bad|wrong|no|nope|nah|false)$',
+                        r'^(bad|wrong|nope|nah|false)$',
                         r'\bi\s+disagree\b',
                         r'\bnot\s+(true|right|correct)\b'
                     ],

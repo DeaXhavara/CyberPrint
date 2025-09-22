@@ -69,7 +69,7 @@ const ContactPage = () => {
         <header className="text-center mb-20">
           <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-green-500/20 to-blue-500/20 border border-green-500/30 mb-8">
             <Mail className="w-5 h-5 text-green-400 mr-2" />
-            <span className="text-green-300 font-medium">Connect With Us</span>
+            <span className="text-green-300 font-medium">Connect With Me </span>
           </div>
           <h1 className="text-6xl font-black text-white mb-8 leading-tight">
             Get in <span className="text-gradient">Touch</span>
@@ -174,7 +174,7 @@ const ContactPage = () => {
                 required
                 rows={6}
                 className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                placeholder="Tell us more about your inquiry..."
+                placeholder="Tell more about your inquiry..."
               />
             </div>
             

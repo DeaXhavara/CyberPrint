@@ -139,10 +139,42 @@ Key features:
 - **Mobile-Responsive** → Optimized across devices  
 
 ### Technical Architecture
-- **Microservices Design** → Separate backend and frontend services  
-- **Docker Containerization** → Consistent development environments  
-- **Environment Management** → Secure API key handling  
-- **CORS Configuration** → Seamless frontend-backend communication  
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│  React Frontend │    │  FastAPI Backend │    │   ML Pipeline   │
+│                 │    │                  │    │                 │
+│ • User Interface│◄──►│ • REST API       │◄──►│ • DeBERTa Model │
+│•State Management│    │ • Data Processing│    │ • Sub-labeling  │
+│ • PDF Display   │    │ • API Integration│    │• Active Learning│
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Static Assets │    │  External APIs   │    │  Model Storage  │
+│                 │    │                  │    │                 │
+│ • Images/Logos  │    │ • Reddit API     │    │ • DeBERTa Files │
+│ • CSS/Styling   │    │ • YouTube API    │    │ • Encoders      │
+│ • Public Files  │    │ • Rate Limiting  │    │ • Vectorizers   │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+```
+
+**System Flow:**
+1. **User Input** → React frontend captures Reddit/YouTube URLs
+2. **API Request** → FastAPI backend validates and processes requests
+3. **Data Fetching** → External APIs retrieve user comments/posts
+4. **ML Processing** → DeBERTa model analyzes sentiment with sub-labeling
+5. **Report Generation** → PDF created with insights and visualizations
+6. **Response Delivery** → Frontend displays results with download option
+
+**Core Components:**
+- **Frontend Layer** → React SPA with responsive design and real-time updates
+- **API Gateway** → FastAPI with automatic documentation and validation  
+- **ML Engine** → Custom DeBERTa implementation with fallback systems
+- **Data Pipeline** → Robust text preprocessing and batch processing
+- **Storage Layer** → Local model files with Git LFS for large assets
+- **Security** → Environment-based configuration with API key protection  
 
 ---
 
@@ -158,9 +190,9 @@ Key features:
 - **Cause**: Training data imbalance toward neutral predictions  
 - **Solution**: Post-processing override system for gratitude detection  
 
-### Multi-Service Architecture
-- **Problem**: Coordinating React frontend with FastAPI backend  
-- **Solution**: Proper CORS configuration and environment management  
+### Training Data Quality vs Quantity**
+- **Problem:** Achieving a high confidence required significantly more high-quality labeled data than initially available_
+- **Solution:** Built an active learning pipeline with data augmentation techniques (paraphrasing, context variations) and human-in-the-loop feedback to iteratively improve model performance.
 
 ---
 

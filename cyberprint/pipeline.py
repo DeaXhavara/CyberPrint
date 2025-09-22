@@ -36,7 +36,7 @@ from datetime import datetime
 try:
     from .data.build_balanced_dataset import CyberPrintDatasetBuilder
 except ImportError:
-    # For deployment, we don't need the dataset builder
+    # For production environments, we don't need the dataset builder
     CyberPrintDatasetBuilder = None
 
 # Set up logging

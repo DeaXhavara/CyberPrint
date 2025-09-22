@@ -35,7 +35,7 @@ app = FastAPI(title="CyberPrint API", description="Advanced Sentiment Analysis P
 # Enable CORS for frontend development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for Railway deployment
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -356,6 +356,6 @@ if __name__ == "__main__":
     import uvicorn
     import os
     
-    # Use PORT environment variable if available (for Railway), otherwise default to 8000
+    # Use PORT environment variable if available, otherwise default to 8000
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port, reload=False)

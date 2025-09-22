@@ -250,7 +250,7 @@ def main():
     print("2. Collect more training data for those cases")
     print("3. Retrain model with enhanced data")
     print("4. Apply temperature scaling for calibration")
-    print("5. Consider ensemble methods for production")
+    print("5. Consider ensemble methods for optimization")
     
     return plan
 

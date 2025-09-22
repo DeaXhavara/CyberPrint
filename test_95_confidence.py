@@ -136,7 +136,7 @@ def test_95_confidence():
             print(f"\n🎯 95% TARGET: {'✅ ACHIEVED' if target_achieved else '❌ NOT ACHIEVED'}")
             
             if target_achieved:
-                print("🎉 SUCCESS: Ready for deployment!")
+                print("🎉 SUCCESS: Model performing well!")
             else:
                 gap = 0.95 - avg_confidence
                 print(f"📈 Gap to close: {gap:.3f} ({gap*100:.1f}%)")

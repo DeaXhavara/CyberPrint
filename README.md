@@ -9,7 +9,7 @@
 
 
 ## Table of Contents
-1. [Quick Start for Judges](#quick-start-for-judges)  
+1. [Quick Start for Judges!](#quick-start-for-judges)  
 2. [Inspiration](#inspiration)  
 3. [What it does](#what-it-does)  
 4. [How I built it](#how-i-built-it)  

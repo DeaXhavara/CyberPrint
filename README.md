@@ -40,7 +40,7 @@ git lfs pull  # Download large model files
 
 ### 2. Backend Setup
 ```bash
-# Create and activate virtual environment
+# Create and activate a virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 

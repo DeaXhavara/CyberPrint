@@ -9,18 +9,18 @@
 
 
 ## Table of Contents
-1. [Quick Start for Judges!](#quick-start-for-judges)  
-2. [Inspiration](#inspiration)  
-3. [What it does](#what-it-does)  
-4. [How I built it](#how-i-built-it)  
+1. [Quick Start for Judges](#quick-start-for-judges)  
+3. [Inspiration](#inspiration)  
+4. [What it does](#what-it-does)  
+5. [How I built it](#how-i-built-it)  
    - [AI/ML Architecture](#aiml-architecture)  
    - [Backend Infrastructure](#backend-infrastructure)  
    - [Frontend Experience](#frontend-experience)  
    - [Technical Architecture](#technical-architecture)  
-5. [Challenges I ran into](#challenges-i-ran-into)  
-6. [Accomplishments that I'm proud of](#accomplishments-that-im-proud-of)  
-7. [What I learned](#what-i-learned)  
-8. [What's next for CyberPrint](#whats-next-for-cyberprint)  
+6. [Challenges I ran into](#challenges-i-ran-into)  
+7. [Accomplishments that I'm proud of](#accomplishments-that-im-proud-of)  
+8. [What I learned](#what-i-learned)  
+9. [What's Next for CyberPrint](#whats-next-for-cyberprint)  
 
 ---
 

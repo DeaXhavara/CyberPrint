@@ -205,7 +205,7 @@ Key features:
 - Comprehensive sub-label classification system  
 - Seamless UX from input → full analysis  
 - Designed CyberPrint logo in Canva  
-- Most importantly: **I brought my vision to life**  
+- Most importantly, I have successfully brought my vision to .  
 
 ---
 

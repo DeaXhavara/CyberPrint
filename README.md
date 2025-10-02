@@ -247,7 +247,7 @@ Key features:
 CyberPrint is an open project.  
 If you find it useful, feel free to **fork it**, **star it**, or submit a **pull request**.  
 
-Bug reports, feature suggestions, and improvements are always welcome! As my inaugural full-stack web application, I am eager to receive constructive feedback.
+Bug reports, feature suggestions, and improvements are welcome! As my inaugural full-stack web application, I am eager to receive constructive feedback.
 
 CyberPrint - Where AI meets digital well-being
 

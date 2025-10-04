@@ -2,7 +2,7 @@
 
   <img width="200" height="200" alt="CyberPrint" src="https://github.com/user-attachments/assets/40e8edcd-50ac-479b-ba03-d0ec97e2f551" />
 
-  <h3><i>CyberPrint - Your Online Behavior, Decoded</i></h3>
+  <h3><i>CyberPrint - Your Online Behavior, Decoded </i></h3>
 
 </div>
 

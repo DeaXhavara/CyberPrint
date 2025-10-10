@@ -11,7 +11,7 @@
 ## Table of Contents
 1. [Quick Start for Judges](#quick-start-for-judges)  
 3. [Inspiration](#inspiration)  
-4. [What it does](#what-it-does)  
+4. [What CyberPrint does](#what-cyberprint-does)  
 5. [How I built it](#how-i-built-it)  
    - [AI/ML Architecture](#aiml-architecture)  
    - [Backend Infrastructure](#backend-infrastructure)  
@@ -99,7 +99,7 @@ The goal: analyze these patterns and provide **meaningful insights** for digital
 
 ---
 
-## What it does
+## What CyberPrint does
 CyberPrint is an advanced **sentiment analysis platform** that analyzes users' digital communications across Reddit and YouTube to generate **comprehensive mental health and wellbeing reports**.  
 
 Key features:

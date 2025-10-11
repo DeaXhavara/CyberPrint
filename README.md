@@ -73,7 +73,7 @@ npm start
 ### 5. Access the Application
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/doc
+- **API Docs**: http://localhost:8000/docs
 
 ### Quick Test
 1. Open http://localhost:3000

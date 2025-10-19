@@ -8,7 +8,7 @@
 
 
 
-## Table of Contents (shortcut)
+## Table of Contents
 1. [Quick Start for Judges](#quick-start-for-judges)  
 3. [Inspiration](#inspiration)  
 4. [What CyberPrint does](#what-cyberprint-does)  

@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img width="200" height="200" alt="CyberPrint" src="https://github.com/user-attachments/assets/40e8edcd-50ac-479b-ba03-d0ec97e2f551" />
+<img width="200" height="200" alt="cyberprint-logo-circular" src="https://github.com/user-attachments/assets/21663475-97a4-4432-9619-ce7b21404fe5" />
 
   <h3><i>CyberPrint - Your Online Behavior, Decoded </i></h3>
 

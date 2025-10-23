@@ -29,7 +29,7 @@
 ### Prerequisites
 - Python 3.8+ 
 - Node.js 16+ and npm
-- Git with Git LFS enabled
+- Git + Git LFS enabled
 
 ### 1. Clone and Setup
 ```bash

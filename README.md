@@ -35,7 +35,7 @@
 ```bash
 git clone https://github.com/DeaXhavara/CyberPrint.git
 cd CyberPrint
-git lfs pull  # Download large model files
+git lfs pull  # Download large model files (from LLM)
 ```
 
 ### 2. Backend Setup

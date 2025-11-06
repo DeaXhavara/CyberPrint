@@ -38,7 +38,7 @@ cd CyberPrint
 git lfs pull  # Download large model files (from LLM)
 ```
 
-### 2. Backend Setup
+### 2.Backend Setup
 ```bash
 # Create and activate a virtual environment
 python -m venv venv

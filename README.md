@@ -38,7 +38,7 @@ cd CyberPrint
 git lfs pull  # Download large model files (from LLM)
 ```
 
-### 2.Backend Setup
+### 2. Backend Setup
 ```bash
 # Create and activate a virtual environment
 python -m venv venv
@@ -99,7 +99,7 @@ The goal: analyze these patterns and provide **meaningful insights** for digital
 
 ---
 
-## What CyberPrint does
+## What CyberPrint does:
 CyberPrint is an advanced **sentiment analysis platform** that analyzes users' digital communications across Reddit and YouTube to generate **comprehensive mental health and wellbeing reports**.  
 
 Key features:
